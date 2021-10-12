@@ -7,7 +7,7 @@ const count = ref(0)
 </script>
 
 <template>
-  <h1 class="text-green-300">{{ msg }}</h1>
+  <h1 class="text-red-500">{{ msg }}</h1>
 
   <p>
     Recommended IDE setup:

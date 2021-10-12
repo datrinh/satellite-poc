@@ -7,8 +7,8 @@ const isOpen = ref(false)
 
 <template>
   <main v-if="isOpen">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Custom Element" />
+    <img alt="Vue logo" src="./assets/logo.png" class="w-10" />
+    <HelloWorld msg="Normal Component" />
 
     <p>
       TEST PARAGRAPH
