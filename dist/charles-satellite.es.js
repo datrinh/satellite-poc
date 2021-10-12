@@ -3243,6 +3243,9 @@ function setupBlock(vnode) {
 function createElementBlock(type, props, children, patchFlag, dynamicProps, shapeFlag) {
   return setupBlock(createBaseVNode(type, props, children, patchFlag, dynamicProps, shapeFlag, true));
 }
+function createBlock(type, props, children, patchFlag, dynamicProps) {
+  return setupBlock(createVNode(type, props, children, patchFlag, dynamicProps, true));
+}
 function isVNode(value) {
   return value ? value.__v_isVNode === true : false;
 }
@@ -3365,6 +3368,9 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 }
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text, null, text, flag);
+}
+function createCommentVNode(text = "", asBlock = false) {
+  return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
 }
 function normalizeVNode(child) {
   if (child == null || typeof child === "boolean") {
@@ -4625,8 +4631,9 @@ var _export_sfc = (sfc, props) => {
   }
   return sfc;
 };
-const _withScopeId$1 = (n) => (pushScopeId("data-v-8203a322"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _withScopeId$1 = (n) => (pushScopeId("data-v-09a05773"), n = n(), popScopeId(), n);
+const _hoisted_1$1 = { class: "text-green-300" };
+const _hoisted_2$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode(" Recommended IDE setup: "),
   /* @__PURE__ */ createBaseVNode("a", {
     href: "https://code.visualstudio.com/",
@@ -4638,12 +4645,12 @@ const _hoisted_1$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ create
     target: "_blank"
   }, "Volar")
 ], -1));
-const _hoisted_2$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode("See "),
   /* @__PURE__ */ createBaseVNode("code", null, "README.md"),
   /* @__PURE__ */ createTextVNode(" for more information.")
 ], -1));
-const _hoisted_3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _hoisted_4 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createBaseVNode("a", {
     href: "https://vitejs.dev/guide/features.html",
     target: "_blank"
@@ -4654,7 +4661,7 @@ const _hoisted_3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBa
     target: "_blank"
   }, "Vue 3 Docs")
 ], -1));
-const _hoisted_4 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _hoisted_5 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode(" Edit "),
   /* @__PURE__ */ createBaseVNode("code", null, "components/HelloWorld.vue"),
   /* @__PURE__ */ createTextVNode(" to test hot module replacement. ")
@@ -4667,38 +4674,47 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const count = ref(0);
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createBaseVNode("h1", null, toDisplayString(__props.msg), 1),
-        _hoisted_1$1,
+        createBaseVNode("h1", _hoisted_1$1, toDisplayString(__props.msg), 1),
         _hoisted_2$1,
-        _hoisted_3,
+        _hoisted_3$1,
+        _hoisted_4,
         createBaseVNode("button", {
           type: "button",
           onClick: _cache[0] || (_cache[0] = ($event) => count.value++)
         }, "count is: " + toDisplayString(count.value), 1),
-        _hoisted_4
+        _hoisted_5
       ], 64);
     };
   }
 });
-var HelloWorld = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-8203a322"]]);
-var _style_0 = "main[data-v-7ceab36f]{border:1px solid red;position:fixed;bottom:8px;right:8px}p[data-v-7ceab36f]{color:red}\n";
-const _withScopeId = (n) => (pushScopeId("data-v-7ceab36f"), n = n(), popScopeId(), n);
-const _hoisted_1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+var HelloWorld = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-09a05773"]]);
+var _style_0 = "main[data-v-34fded76]{border:1px solid red;position:fixed;bottom:8px;right:8px}p[data-v-34fded76]{--tw-bg-opacity: 1;background-color:rgba(29,78,216,var(--tw-bg-opacity));padding:.5rem;--tw-text-opacity: 1;color:rgba(255,255,255,var(--tw-text-opacity))}\n";
+const _withScopeId = (n) => (pushScopeId("data-v-34fded76"), n = n(), popScopeId(), n);
+const _hoisted_1 = { key: 0 };
+const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
   alt: "Vue logo",
   src: _imports_0
 }, null, -1));
-const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST P ", -1));
+const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST P ", -1));
 const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
+    const isOpen = ref(false);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("main", null, [
-        _hoisted_1,
-        createVNode(HelloWorld, { msg: "Hello Vue 3 + TypeScript + Vite" }),
-        _hoisted_2
-      ]);
+      return openBlock(), createElementBlock(Fragment, null, [
+        isOpen.value ? (openBlock(), createElementBlock("main", _hoisted_1, [
+          _hoisted_2,
+          createVNode(HelloWorld, { msg: "Hello Satellite" }),
+          _hoisted_3
+        ])) : createCommentVNode("", true),
+        createBaseVNode("button", {
+          class: "fixed bottom-2 right-2 rounded-full bg-yellow-300",
+          onClick: _cache[0] || (_cache[0] = ($event) => isOpen.value = !isOpen.value)
+        }, "Toggle")
+      ], 64);
     };
   }
 });
-var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-7ceab36f"]]);
+var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-34fded76"]]);
+var windi = "";
 const AppElement = defineCustomElement(App);
 customElements.define("app-element", AppElement);
