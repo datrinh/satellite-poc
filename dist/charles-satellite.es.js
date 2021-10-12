@@ -1,3 +1,4 @@
+var windi = "";
 function makeMap(str, expectsLowerCase) {
   const map = Object.create(null);
   const list = str.split(",");
@@ -2184,6 +2185,35 @@ const updateSlots = (instance, children, optimized) => {
     }
   }
 };
+function withDirectives(vnode, directives) {
+  const internalInstance = currentRenderingInstance;
+  if (internalInstance === null) {
+    return vnode;
+  }
+  const instance = internalInstance.proxy;
+  const bindings = vnode.dirs || (vnode.dirs = []);
+  for (let i = 0; i < directives.length; i++) {
+    let [dir, value, arg, modifiers = EMPTY_OBJ] = directives[i];
+    if (isFunction(dir)) {
+      dir = {
+        mounted: dir,
+        updated: dir
+      };
+    }
+    if (dir.deep) {
+      traverse(value);
+    }
+    bindings.push({
+      dir,
+      instance,
+      value,
+      oldValue: void 0,
+      arg,
+      modifiers
+    });
+  }
+  return vnode;
+}
 function invokeDirectiveHook(vnode, prevVNode, instance, name) {
   const bindings = vnode.dirs;
   const oldBindings = prevVNode && prevVNode.dirs;
@@ -3243,9 +3273,6 @@ function setupBlock(vnode) {
 function createElementBlock(type, props, children, patchFlag, dynamicProps, shapeFlag) {
   return setupBlock(createBaseVNode(type, props, children, patchFlag, dynamicProps, shapeFlag, true));
 }
-function createBlock(type, props, children, patchFlag, dynamicProps) {
-  return setupBlock(createVNode(type, props, children, patchFlag, dynamicProps, true));
-}
 function isVNode(value) {
   return value ? value.__v_isVNode === true : false;
 }
@@ -3368,9 +3395,6 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 }
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text, null, text, flag);
-}
-function createCommentVNode(text = "", asBlock = false) {
-  return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
 }
 function normalizeVNode(child) {
   if (child == null || typeof child === "boolean") {
@@ -4615,6 +4639,44 @@ const DOMTransitionPropsValidators = {
   leaveToClass: String
 };
 /* @__PURE__ */ extend({}, BaseTransition.props, DOMTransitionPropsValidators);
+const vShow = {
+  beforeMount(el, { value }, { transition }) {
+    el._vod = el.style.display === "none" ? "" : el.style.display;
+    if (transition && value) {
+      transition.beforeEnter(el);
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  mounted(el, { value }, { transition }) {
+    if (transition && value) {
+      transition.enter(el);
+    }
+  },
+  updated(el, { value, oldValue }, { transition }) {
+    if (!value === !oldValue)
+      return;
+    if (transition) {
+      if (value) {
+        transition.beforeEnter(el);
+        setDisplay(el, true);
+        transition.enter(el);
+      } else {
+        transition.leave(el, () => {
+          setDisplay(el, false);
+        });
+      }
+    } else {
+      setDisplay(el, value);
+    }
+  },
+  beforeUnmount(el, { value }) {
+    setDisplay(el, value);
+  }
+};
+function setDisplay(el, value) {
+  el.style.display = value ? el._vod : "none";
+}
 const rendererOptions = extend({ patchProp }, nodeOps);
 let renderer;
 function ensureRenderer() {
@@ -4631,8 +4693,8 @@ var _export_sfc = (sfc, props) => {
   }
   return sfc;
 };
-const _withScopeId$1 = (n) => (pushScopeId("data-v-09a05773"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = { class: "text-green-300" };
+const _withScopeId$1 = (n) => (pushScopeId("data-v-03213e7a"), n = n(), popScopeId(), n);
+const _hoisted_1$1 = { class: "text-red-500" };
 const _hoisted_2$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode(" Recommended IDE setup: "),
   /* @__PURE__ */ createBaseVNode("a", {
@@ -4645,7 +4707,7 @@ const _hoisted_2$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ create
     target: "_blank"
   }, "Volar")
 ], -1));
-const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _hoisted_3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode("See "),
   /* @__PURE__ */ createBaseVNode("code", null, "README.md"),
   /* @__PURE__ */ createTextVNode(" for more information.")
@@ -4676,7 +4738,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       return openBlock(), createElementBlock(Fragment, null, [
         createBaseVNode("h1", _hoisted_1$1, toDisplayString(__props.msg), 1),
         _hoisted_2$1,
-        _hoisted_3$1,
+        _hoisted_3,
         _hoisted_4,
         createBaseVNode("button", {
           type: "button",
@@ -4687,34 +4749,34 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var HelloWorld = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-09a05773"]]);
-var _style_0 = "main[data-v-34fded76]{border:1px solid red;position:fixed;bottom:8px;right:8px}p[data-v-34fded76]{--tw-bg-opacity: 1;background-color:rgba(29,78,216,var(--tw-bg-opacity));padding:.5rem;--tw-text-opacity: 1;color:rgba(255,255,255,var(--tw-text-opacity))}\n";
-const _withScopeId = (n) => (pushScopeId("data-v-34fded76"), n = n(), popScopeId(), n);
-const _hoisted_1 = { key: 0 };
-const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+var HelloWorld = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-03213e7a"]]);
+var _style_0 = "main[data-v-5560a5c0]{border:1px solid red;position:fixed;bottom:8px;right:8px}p[data-v-5560a5c0]{--tw-bg-opacity: 1;background-color:rgba(29,78,216,var(--tw-bg-opacity));padding:.5rem;--tw-text-opacity: 1;color:rgba(255,255,255,var(--tw-text-opacity))}.cta-btn[data-v-5560a5c0]{--tw-bg-opacity: 1;background-color:rgba(252,211,77,var(--tw-bg-opacity));border-radius:9999px;border-style:none;cursor:pointer;height:4rem;position:fixed;bottom:.5rem;right:.5rem;--tw-shadow-color: 0, 0, 0;--tw-shadow: 0 1px 3px 0 rgba(var(--tw-shadow-color), .1), 0 1px 2px 0 rgba(var(--tw-shadow-color), .06);-webkit-box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);width:4rem}\n";
+const _withScopeId = (n) => (pushScopeId("data-v-5560a5c0"), n = n(), popScopeId(), n);
+const _hoisted_1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
   alt: "Vue logo",
   src: _imports_0
 }, null, -1));
-const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST P ", -1));
+const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST PARAGRAPH ", -1));
 const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const isOpen = ref(false);
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        isOpen.value ? (openBlock(), createElementBlock("main", _hoisted_1, [
-          _hoisted_2,
-          createVNode(HelloWorld, { msg: "Hello Satellite" }),
-          _hoisted_3
-        ])) : createCommentVNode("", true),
+        withDirectives(createBaseVNode("main", null, [
+          _hoisted_1,
+          createVNode(HelloWorld, { msg: "Custom Element" }),
+          _hoisted_2
+        ], 512), [
+          [vShow, isOpen.value]
+        ]),
         createBaseVNode("button", {
-          class: "fixed bottom-2 right-2 rounded-full bg-yellow-300",
+          class: "cta-btn",
           onClick: _cache[0] || (_cache[0] = ($event) => isOpen.value = !isOpen.value)
-        }, "Toggle")
+        }, "\u{1F4AC}")
       ], 64);
     };
   }
 });
-var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-34fded76"]]);
-var windi = "";
+var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-5560a5c0"]]);
 const AppElement = defineCustomElement(App);
 customElements.define("app-element", AppElement);
