@@ -1,22 +1,25 @@
 <script setup lang="ts">
-// This starter template is using Vue 3 <script setup> SFCs
-// Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
+import {ref} from 'vue'
 import HelloWorld from './components/HelloWorld.vue'
+
+const isOpen = ref(false)
 </script>
 
 <template>
-<main>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3 + TypeScript + Vite" />
+  <main v-if="isOpen">
+    <img alt="Vue logo" src="./assets/logo.png" />
+    <HelloWorld msg="Hello Satellite" />
 
-  <p>
-    TEST P
-  </p>
+    <p>
+      TEST P
+    </p>
 
-</main>
+
+  </main>
+  <button class="fixed bottom-2 right-2 rounded-full bg-yellow-300" @click="isOpen = !isOpen">Toggle</button>
 </template>
 
-<style scoped>
+<style scoped lang="pcss">
 main {
   border: 1px solid red;
   position: fixed;
@@ -24,7 +27,7 @@ main {
   right: 8px;
 }
 p {
-  color: red
+  @apply bg-blue-700 text-white p-2;
 }
 
 </style>
