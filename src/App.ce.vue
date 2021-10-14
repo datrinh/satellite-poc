@@ -11,10 +11,9 @@ const isOpen = ref(false)
     <img alt="Vue logo" src="./assets/logo.png" />
     <HelloWorld msg="Custom Element" />
 
-    <p>
+    <p class="text-pink-500">
       TEST PARAGRAPH
     </p>
-
 
   </main>
   </transition>
@@ -29,9 +28,6 @@ const isOpen = ref(false)
 }
 main {
   @apply fixed shadow bg-white right-2 bottom-20 p-4;
-}
-p {
-  @apply bg-blue-700 text-white p-2;
 }
 .cta-btn {
   @apply fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer;
