@@ -11,7 +11,7 @@ import App from "./App.ce.vue";
 import { defineCustomElement } from "vue";
 
 const AppElement = defineCustomElement(App);
-
 customElements.define("app-element", AppElement);
+document.body.appendChild(new AppElement());
 
 createApp(AppNormal).mount("#app");
