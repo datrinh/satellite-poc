@@ -2,10 +2,11 @@ import { defineConfig } from "vite";
 import path from "path";
 import vue from "@vitejs/plugin-vue";
 import WindiCSS from "vite-plugin-windicss";
+import postcssNesting from "postcss-nesting";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue(), WindiCSS()],
+  plugins: [vue(), WindiCSS(), postcssNesting()],
   build: {
     lib: {
       entry: path.resolve(__dirname, "src/main.ts"),

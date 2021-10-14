@@ -1057,8 +1057,8 @@ function setCurrentRenderingInstance(instance) {
   currentScopeId = instance && instance.type.__scopeId || null;
   return prev;
 }
-function pushScopeId(id) {
-  currentScopeId = id;
+function pushScopeId(id2) {
+  currentScopeId = id2;
 }
 function popScopeId() {
   currentScopeId = null;
@@ -1592,7 +1592,7 @@ function applyOptions(instance) {
   const ctx = instance.ctx;
   shouldCacheAccess = false;
   if (options.beforeCreate) {
-    callHook(options.beforeCreate, instance, "bc");
+    callHook$1(options.beforeCreate, instance, "bc");
   }
   const {
     data: dataOptions,
@@ -1675,7 +1675,7 @@ function applyOptions(instance) {
     });
   }
   if (created) {
-    callHook(created, instance, "c");
+    callHook$1(created, instance, "c");
   }
   function registerLifecycleHook(register, hook) {
     if (isArray(hook)) {
@@ -1752,8 +1752,8 @@ function resolveInjections(injectOptions, ctx, checkDuplicateProperties = NOOP, 
     }
   }
 }
-function callHook(hook, instance, type) {
-  callWithAsyncErrorHandling(isArray(hook) ? hook.map((h) => h.bind(instance.proxy)) : hook.bind(instance.proxy), instance, type);
+function callHook$1(hook, instance, type) {
+  callWithAsyncErrorHandling(isArray(hook) ? hook.map((h2) => h2.bind(instance.proxy)) : hook.bind(instance.proxy), instance, type);
 }
 function createWatcher(raw, ctx, publicThis, key) {
   const getter = key.includes(".") ? createPathGetter(publicThis, key) : () => publicThis[key];
@@ -2095,8 +2095,8 @@ function validatePropName(key) {
   return false;
 }
 function getType(ctor) {
-  const match = ctor && ctor.toString().match(/^\s*function (\w+)/);
-  return match ? match[1] : ctor === null ? "null" : "";
+  const match2 = ctor && ctor.toString().match(/^\s*function (\w+)/);
+  return match2 ? match2[1] : ctor === null ? "null" : "";
 }
 function isSameType(a, b) {
   return getType(a) === getType(b);
@@ -2185,35 +2185,6 @@ const updateSlots = (instance, children, optimized) => {
     }
   }
 };
-function withDirectives(vnode, directives) {
-  const internalInstance = currentRenderingInstance;
-  if (internalInstance === null) {
-    return vnode;
-  }
-  const instance = internalInstance.proxy;
-  const bindings = vnode.dirs || (vnode.dirs = []);
-  for (let i = 0; i < directives.length; i++) {
-    let [dir, value, arg, modifiers = EMPTY_OBJ] = directives[i];
-    if (isFunction(dir)) {
-      dir = {
-        mounted: dir,
-        updated: dir
-      };
-    }
-    if (dir.deep) {
-      traverse(value);
-    }
-    bindings.push({
-      dir,
-      instance,
-      value,
-      oldValue: void 0,
-      arg,
-      modifiers
-    });
-  }
-  return vnode;
-}
 function invokeDirectiveHook(vnode, prevVNode, instance, name) {
   const bindings = vnode.dirs;
   const oldBindings = prevVNode && prevVNode.dirs;
@@ -3677,12 +3648,12 @@ function setupStatefulComponent(instance, isSSR) {
   const Component = instance.type;
   instance.accessCache = Object.create(null);
   instance.proxy = markRaw(new Proxy(instance.ctx, PublicInstanceProxyHandlers));
-  const { setup } = Component;
-  if (setup) {
-    const setupContext = instance.setupContext = setup.length > 1 ? createSetupContext(instance) : null;
+  const { setup: setup4 } = Component;
+  if (setup4) {
+    const setupContext = instance.setupContext = setup4.length > 1 ? createSetupContext(instance) : null;
     setCurrentInstance(instance);
     pauseTracking();
-    const setupResult = callWithErrorHandling(setup, instance, 0, [instance.props, setupContext]);
+    const setupResult = callWithErrorHandling(setup4, instance, 0, [instance.props, setupContext]);
     resetTracking();
     unsetCurrentInstance();
     if (isPromise(setupResult)) {
@@ -3854,13 +3825,13 @@ function nextTick(fn) {
   const p2 = currentFlushPromise || resolvedPromise;
   return fn ? p2.then(this ? fn.bind(this) : fn) : p2;
 }
-function findInsertionIndex(id) {
+function findInsertionIndex(id2) {
   let start = flushIndex + 1;
   let end = queue.length;
   while (start < end) {
     const middle = start + end >>> 1;
     const middleJobId = getId(queue[middle]);
-    middleJobId < id ? start = middle + 1 : end = middle;
+    middleJobId < id2 ? start = middle + 1 : end = middle;
   }
   return start;
 }
@@ -3959,6 +3930,9 @@ function flushJobs(seen) {
       flushJobs(seen);
     }
   }
+}
+function watchEffect(effect, options) {
+  return doWatch(effect, null, options);
 }
 const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
@@ -4140,6 +4114,26 @@ function traverse(value, seen) {
   }
   return value;
 }
+function h(type, propsOrChildren, children) {
+  const l = arguments.length;
+  if (l === 2) {
+    if (isObject(propsOrChildren) && !isArray(propsOrChildren)) {
+      if (isVNode(propsOrChildren)) {
+        return createVNode(type, null, [propsOrChildren]);
+      }
+      return createVNode(type, propsOrChildren);
+    } else {
+      return createVNode(type, null, propsOrChildren);
+    }
+  } else {
+    if (l > 3) {
+      children = Array.prototype.slice.call(arguments, 2);
+    } else if (l === 3 && isVNode(children)) {
+      children = [children];
+    }
+    return createVNode(type, propsOrChildren, children);
+  }
+}
 const version = "3.2.20";
 const svgNS = "http://www.w3.org/2000/svg";
 const doc = typeof document !== "undefined" ? document : null;
@@ -4172,8 +4166,8 @@ const nodeOps = {
   parentNode: (node) => node.parentNode,
   nextSibling: (node) => node.nextSibling,
   querySelector: (selector) => doc.querySelector(selector),
-  setScopeId(el, id) {
-    el.setAttribute(id, "");
+  setScopeId(el, id2) {
+    el.setAttribute(id2, "");
   },
   cloneNode(el) {
     const cloned = el.cloneNode(true);
@@ -4506,7 +4500,7 @@ class VueElement extends BaseClass {
     this._connected = false;
     nextTick(() => {
       if (!this._connected) {
-        render(null, this.shadowRoot);
+        render$1(null, this.shadowRoot);
         this._instance = null;
       }
     });
@@ -4586,7 +4580,7 @@ class VueElement extends BaseClass {
     }
   }
   _update() {
-    render(this._createVNode(), this.shadowRoot);
+    render$1(this._createVNode(), this.shadowRoot);
   }
   _createVNode() {
     const vnode = createVNode(this._def, extend({}, this._props));
@@ -4620,6 +4614,10 @@ class VueElement extends BaseClass {
     }
   }
 }
+const TRANSITION = "transition";
+const ANIMATION = "animation";
+const Transition = (props, { slots }) => h(BaseTransition, resolveTransitionProps(props), slots);
+Transition.displayName = "Transition";
 const DOMTransitionPropsValidators = {
   name: String,
   type: String,
@@ -4638,54 +4636,220 @@ const DOMTransitionPropsValidators = {
   leaveActiveClass: String,
   leaveToClass: String
 };
-/* @__PURE__ */ extend({}, BaseTransition.props, DOMTransitionPropsValidators);
-const vShow = {
-  beforeMount(el, { value }, { transition }) {
-    el._vod = el.style.display === "none" ? "" : el.style.display;
-    if (transition && value) {
-      transition.beforeEnter(el);
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  mounted(el, { value }, { transition }) {
-    if (transition && value) {
-      transition.enter(el);
-    }
-  },
-  updated(el, { value, oldValue }, { transition }) {
-    if (!value === !oldValue)
-      return;
-    if (transition) {
-      if (value) {
-        transition.beforeEnter(el);
-        setDisplay(el, true);
-        transition.enter(el);
-      } else {
-        transition.leave(el, () => {
-          setDisplay(el, false);
-        });
-      }
-    } else {
-      setDisplay(el, value);
-    }
-  },
-  beforeUnmount(el, { value }) {
-    setDisplay(el, value);
+Transition.props = /* @__PURE__ */ extend({}, BaseTransition.props, DOMTransitionPropsValidators);
+const callHook = (hook, args = []) => {
+  if (isArray(hook)) {
+    hook.forEach((h2) => h2(...args));
+  } else if (hook) {
+    hook(...args);
   }
 };
-function setDisplay(el, value) {
-  el.style.display = value ? el._vod : "none";
+const hasExplicitCallback = (hook) => {
+  return hook ? isArray(hook) ? hook.some((h2) => h2.length > 1) : hook.length > 1 : false;
+};
+function resolveTransitionProps(rawProps) {
+  const baseProps = {};
+  for (const key in rawProps) {
+    if (!(key in DOMTransitionPropsValidators)) {
+      baseProps[key] = rawProps[key];
+    }
+  }
+  if (rawProps.css === false) {
+    return baseProps;
+  }
+  const { name = "v", type, duration, enterFromClass = `${name}-enter-from`, enterActiveClass = `${name}-enter-active`, enterToClass = `${name}-enter-to`, appearFromClass = enterFromClass, appearActiveClass = enterActiveClass, appearToClass = enterToClass, leaveFromClass = `${name}-leave-from`, leaveActiveClass = `${name}-leave-active`, leaveToClass = `${name}-leave-to` } = rawProps;
+  const durations = normalizeDuration(duration);
+  const enterDuration = durations && durations[0];
+  const leaveDuration = durations && durations[1];
+  const { onBeforeEnter, onEnter, onEnterCancelled, onLeave, onLeaveCancelled, onBeforeAppear = onBeforeEnter, onAppear = onEnter, onAppearCancelled = onEnterCancelled } = baseProps;
+  const finishEnter = (el, isAppear, done) => {
+    removeTransitionClass(el, isAppear ? appearToClass : enterToClass);
+    removeTransitionClass(el, isAppear ? appearActiveClass : enterActiveClass);
+    done && done();
+  };
+  const finishLeave = (el, done) => {
+    removeTransitionClass(el, leaveToClass);
+    removeTransitionClass(el, leaveActiveClass);
+    done && done();
+  };
+  const makeEnterHook = (isAppear) => {
+    return (el, done) => {
+      const hook = isAppear ? onAppear : onEnter;
+      const resolve = () => finishEnter(el, isAppear, done);
+      callHook(hook, [el, resolve]);
+      nextFrame(() => {
+        removeTransitionClass(el, isAppear ? appearFromClass : enterFromClass);
+        addTransitionClass(el, isAppear ? appearToClass : enterToClass);
+        if (!hasExplicitCallback(hook)) {
+          whenTransitionEnds(el, type, enterDuration, resolve);
+        }
+      });
+    };
+  };
+  return extend(baseProps, {
+    onBeforeEnter(el) {
+      callHook(onBeforeEnter, [el]);
+      addTransitionClass(el, enterFromClass);
+      addTransitionClass(el, enterActiveClass);
+    },
+    onBeforeAppear(el) {
+      callHook(onBeforeAppear, [el]);
+      addTransitionClass(el, appearFromClass);
+      addTransitionClass(el, appearActiveClass);
+    },
+    onEnter: makeEnterHook(false),
+    onAppear: makeEnterHook(true),
+    onLeave(el, done) {
+      const resolve = () => finishLeave(el, done);
+      addTransitionClass(el, leaveFromClass);
+      forceReflow();
+      addTransitionClass(el, leaveActiveClass);
+      nextFrame(() => {
+        removeTransitionClass(el, leaveFromClass);
+        addTransitionClass(el, leaveToClass);
+        if (!hasExplicitCallback(onLeave)) {
+          whenTransitionEnds(el, type, leaveDuration, resolve);
+        }
+      });
+      callHook(onLeave, [el, resolve]);
+    },
+    onEnterCancelled(el) {
+      finishEnter(el, false);
+      callHook(onEnterCancelled, [el]);
+    },
+    onAppearCancelled(el) {
+      finishEnter(el, true);
+      callHook(onAppearCancelled, [el]);
+    },
+    onLeaveCancelled(el) {
+      finishLeave(el);
+      callHook(onLeaveCancelled, [el]);
+    }
+  });
+}
+function normalizeDuration(duration) {
+  if (duration == null) {
+    return null;
+  } else if (isObject(duration)) {
+    return [NumberOf(duration.enter), NumberOf(duration.leave)];
+  } else {
+    const n = NumberOf(duration);
+    return [n, n];
+  }
+}
+function NumberOf(val) {
+  const res = toNumber(val);
+  return res;
+}
+function addTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c) => c && el.classList.add(c));
+  (el._vtc || (el._vtc = new Set())).add(cls);
+}
+function removeTransitionClass(el, cls) {
+  cls.split(/\s+/).forEach((c) => c && el.classList.remove(c));
+  const { _vtc } = el;
+  if (_vtc) {
+    _vtc.delete(cls);
+    if (!_vtc.size) {
+      el._vtc = void 0;
+    }
+  }
+}
+function nextFrame(cb) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(cb);
+  });
+}
+let endId = 0;
+function whenTransitionEnds(el, expectedType, explicitTimeout, resolve) {
+  const id2 = el._endId = ++endId;
+  const resolveIfNotStale = () => {
+    if (id2 === el._endId) {
+      resolve();
+    }
+  };
+  if (explicitTimeout) {
+    return setTimeout(resolveIfNotStale, explicitTimeout);
+  }
+  const { type, timeout, propCount } = getTransitionInfo(el, expectedType);
+  if (!type) {
+    return resolve();
+  }
+  const endEvent = type + "end";
+  let ended = 0;
+  const end = () => {
+    el.removeEventListener(endEvent, onEnd);
+    resolveIfNotStale();
+  };
+  const onEnd = (e) => {
+    if (e.target === el && ++ended >= propCount) {
+      end();
+    }
+  };
+  setTimeout(() => {
+    if (ended < propCount) {
+      end();
+    }
+  }, timeout + 1);
+  el.addEventListener(endEvent, onEnd);
+}
+function getTransitionInfo(el, expectedType) {
+  const styles = window.getComputedStyle(el);
+  const getStyleProperties = (key) => (styles[key] || "").split(", ");
+  const transitionDelays = getStyleProperties(TRANSITION + "Delay");
+  const transitionDurations = getStyleProperties(TRANSITION + "Duration");
+  const transitionTimeout = getTimeout(transitionDelays, transitionDurations);
+  const animationDelays = getStyleProperties(ANIMATION + "Delay");
+  const animationDurations = getStyleProperties(ANIMATION + "Duration");
+  const animationTimeout = getTimeout(animationDelays, animationDurations);
+  let type = null;
+  let timeout = 0;
+  let propCount = 0;
+  if (expectedType === TRANSITION) {
+    if (transitionTimeout > 0) {
+      type = TRANSITION;
+      timeout = transitionTimeout;
+      propCount = transitionDurations.length;
+    }
+  } else if (expectedType === ANIMATION) {
+    if (animationTimeout > 0) {
+      type = ANIMATION;
+      timeout = animationTimeout;
+      propCount = animationDurations.length;
+    }
+  } else {
+    timeout = Math.max(transitionTimeout, animationTimeout);
+    type = timeout > 0 ? transitionTimeout > animationTimeout ? TRANSITION : ANIMATION : null;
+    propCount = type ? type === TRANSITION ? transitionDurations.length : animationDurations.length : 0;
+  }
+  const hasTransform = type === TRANSITION && /\b(transform|all)(,|$)/.test(styles[TRANSITION + "Property"]);
+  return {
+    type,
+    timeout,
+    propCount,
+    hasTransform
+  };
+}
+function getTimeout(delays, durations) {
+  while (delays.length < durations.length) {
+    delays = delays.concat(delays);
+  }
+  return Math.max(...durations.map((d, i) => toMs(d) + toMs(delays[i])));
+}
+function toMs(s) {
+  return Number(s.slice(0, -1).replace(",", ".")) * 1e3;
+}
+function forceReflow() {
+  return document.body.offsetHeight;
 }
 const rendererOptions = extend({ patchProp }, nodeOps);
 let renderer;
 function ensureRenderer() {
   return renderer || (renderer = createRenderer(rendererOptions));
 }
-const render = (...args) => {
+const render$1 = (...args) => {
   ensureRenderer().render(...args);
 };
-var _imports_0 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyNpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDE0IDc5LjE1Njc5NywgMjAxNC8wOC8yMC0wOTo1MzowMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6OTk2QkI4RkE3NjE2MTFFNUE4NEU4RkIxNjQ5MTYyRDgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OTk2QkI4Rjk3NjE2MTFFNUE4NEU4RkIxNjQ5MTYyRDgiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NjU2QTEyNzk3NjkyMTFFMzkxODk4RDkwQkY4Q0U0NzYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NjU2QTEyN0E3NjkyMTFFMzkxODk4RDkwQkY4Q0U0NzYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5WHowqAAAXNElEQVR42uxda4xd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";
 var HelloWorld_vue_vue_type_style_index_0_scoped_true_lang = "";
 var _export_sfc = (sfc, props) => {
   for (const [key, val] of props) {
@@ -4707,7 +4871,7 @@ const _hoisted_2$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ create
     target: "_blank"
   }, "Volar")
 ], -1));
-const _hoisted_3 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
+const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", null, [
   /* @__PURE__ */ createTextVNode("See "),
   /* @__PURE__ */ createBaseVNode("code", null, "README.md"),
   /* @__PURE__ */ createTextVNode(" for more information.")
@@ -4738,7 +4902,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       return openBlock(), createElementBlock(Fragment, null, [
         createBaseVNode("h1", _hoisted_1$1, toDisplayString(__props.msg), 1),
         _hoisted_2$1,
-        _hoisted_3,
+        _hoisted_3$1,
         _hoisted_4,
         createBaseVNode("button", {
           type: "button",
@@ -4750,33 +4914,889 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   }
 });
 var HelloWorld = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-03213e7a"]]);
-var _style_0 = "main[data-v-5560a5c0]{border:1px solid red;position:fixed;bottom:8px;right:8px}p[data-v-5560a5c0]{--tw-bg-opacity: 1;background-color:rgba(29,78,216,var(--tw-bg-opacity));padding:.5rem;--tw-text-opacity: 1;color:rgba(255,255,255,var(--tw-text-opacity))}.cta-btn[data-v-5560a5c0]{--tw-bg-opacity: 1;background-color:rgba(252,211,77,var(--tw-bg-opacity));border-radius:9999px;border-style:none;cursor:pointer;height:4rem;position:fixed;bottom:.5rem;right:.5rem;--tw-shadow-color: 0, 0, 0;--tw-shadow: 0 1px 3px 0 rgba(var(--tw-shadow-color), .1), 0 1px 2px 0 rgba(var(--tw-shadow-color), .06);-webkit-box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);width:4rem}\n";
-const _withScopeId = (n) => (pushScopeId("data-v-5560a5c0"), n = n(), popScopeId(), n);
-const _hoisted_1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
-  alt: "Vue logo",
-  src: _imports_0
-}, null, -1));
-const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST PARAGRAPH ", -1));
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  setup(__props) {
-    const isOpen = ref(false);
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
-        withDirectives(createBaseVNode("main", null, [
-          _hoisted_1,
-          createVNode(HelloWorld, { msg: "Custom Element" }),
-          _hoisted_2
-        ], 512), [
-          [vShow, isOpen.value]
-        ]),
-        createBaseVNode("button", {
-          class: "cta-btn",
-          onClick: _cache[0] || (_cache[0] = ($event) => isOpen.value = !isOpen.value)
-        }, "\u{1F4AC}")
-      ], 64);
+function _extends() {
+  _extends = Object.assign || function(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+    return target;
+  };
+  return _extends.apply(this, arguments);
+}
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null)
+    return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0)
+      continue;
+    target[key] = source[key];
+  }
+  return target;
+}
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o)
+    return;
+  if (typeof o === "string")
+    return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor)
+    n = o.constructor.name;
+  if (n === "Map" || n === "Set")
+    return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))
+    return _arrayLikeToArray(o, minLen);
+}
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length)
+    len = arr.length;
+  for (var i = 0, arr2 = new Array(len); i < len; i++)
+    arr2[i] = arr[i];
+  return arr2;
+}
+function _createForOfIteratorHelperLoose(o, allowArrayLike) {
+  var it;
+  if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
+    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+      if (it)
+        o = it;
+      var i = 0;
+      return function() {
+        if (i >= o.length)
+          return {
+            done: true
+          };
+        return {
+          done: false,
+          value: o[i++]
+        };
+      };
+    }
+    throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+  it = o[Symbol.iterator]();
+  return it.next.bind(it);
+}
+function match(value, lookup) {
+  if (value in lookup) {
+    var returnValue = lookup[value];
+    for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+      args[_key - 2] = arguments[_key];
+    }
+    return typeof returnValue === "function" ? returnValue.apply(void 0, args) : returnValue;
+  }
+  var error = new Error('Tried to handle "' + value + '" but there is no handler defined. Only defined handlers are: ' + Object.keys(lookup).map(function(key) {
+    return '"' + key + '"';
+  }).join(", ") + ".");
+  if (Error.captureStackTrace)
+    Error.captureStackTrace(error, match);
+  throw error;
+}
+var Features;
+(function(Features2) {
+  Features2[Features2["None"] = 0] = "None";
+  Features2[Features2["RenderStrategy"] = 1] = "RenderStrategy";
+  Features2[Features2["Static"] = 2] = "Static";
+})(Features || (Features = {}));
+var RenderStrategy;
+(function(RenderStrategy2) {
+  RenderStrategy2[RenderStrategy2["Unmount"] = 0] = "Unmount";
+  RenderStrategy2[RenderStrategy2["Hidden"] = 1] = "Hidden";
+})(RenderStrategy || (RenderStrategy = {}));
+function render(_ref) {
+  var _ref$visible = _ref.visible, visible = _ref$visible === void 0 ? true : _ref$visible, _ref$features = _ref.features, features = _ref$features === void 0 ? Features.None : _ref$features, main = _objectWithoutPropertiesLoose(_ref, ["visible", "features"]);
+  if (visible)
+    return _render(main);
+  if (features & Features.Static) {
+    if (main.props["static"])
+      return _render(main);
+  }
+  if (features & Features.RenderStrategy) {
+    var _main$props$unmount, _match;
+    var strategy = ((_main$props$unmount = main.props.unmount) != null ? _main$props$unmount : true) ? RenderStrategy.Unmount : RenderStrategy.Hidden;
+    return match(strategy, (_match = {}, _match[RenderStrategy.Unmount] = function() {
+      return null;
+    }, _match[RenderStrategy.Hidden] = function() {
+      return _render(_extends({}, main, {
+        props: _extends({}, main.props, {
+          hidden: true,
+          style: {
+            display: "none"
+          }
+        })
+      }));
+    }, _match));
+  }
+  return _render(main);
+}
+function _render(_ref2) {
+  var props = _ref2.props, attrs = _ref2.attrs, slots = _ref2.slots, slot = _ref2.slot, name = _ref2.name;
+  var _omit = omit(props, ["unmount", "static"]), as = _omit.as, passThroughProps = _objectWithoutPropertiesLoose(_omit, ["as"]);
+  var children = slots["default"] == null ? void 0 : slots["default"](slot);
+  if (as === "template") {
+    if (Object.keys(passThroughProps).length > 0 || Object.keys(attrs).length > 0) {
+      var _ref3 = children != null ? children : [], firstChild = _ref3[0], other = _ref3.slice(1);
+      if (!isValidElement(firstChild) || other.length > 0) {
+        throw new Error(['Passing props on "template"!', "", "The current component <" + name + ' /> is rendering a "template".', "However we need to passthrough the following props:", Object.keys(passThroughProps).concat(Object.keys(attrs)).map(function(line) {
+          return "  - " + line;
+        }).join("\n"), "", "You can apply a few solutions:", ['Add an `as="..."` prop, to ensure that we render an actual element instead of a "template".', "Render a single element as the child so that we can forward the props onto that element."].map(function(line) {
+          return "  - " + line;
+        }).join("\n")].join("\n"));
+      }
+      return cloneVNode(firstChild, passThroughProps);
+    }
+    if (Array.isArray(children) && children.length === 1) {
+      return children[0];
+    }
+    return children;
+  }
+  return h(as, passThroughProps, children);
+}
+function omit(object, keysToOmit) {
+  if (keysToOmit === void 0) {
+    keysToOmit = [];
+  }
+  var clone = Object.assign({}, object);
+  for (var _iterator = _createForOfIteratorHelperLoose(keysToOmit), _step; !(_step = _iterator()).done; ) {
+    var key = _step.value;
+    if (key in clone)
+      delete clone[key];
+  }
+  return clone;
+}
+function isValidElement(input) {
+  if (input == null)
+    return false;
+  if (typeof input.type === "string")
+    return true;
+  if (typeof input.type === "object")
+    return true;
+  if (typeof input.type === "function")
+    return true;
+  return false;
+}
+var Keys;
+(function(Keys2) {
+  Keys2["Space"] = " ";
+  Keys2["Enter"] = "Enter";
+  Keys2["Escape"] = "Escape";
+  Keys2["Backspace"] = "Backspace";
+  Keys2["ArrowLeft"] = "ArrowLeft";
+  Keys2["ArrowUp"] = "ArrowUp";
+  Keys2["ArrowRight"] = "ArrowRight";
+  Keys2["ArrowDown"] = "ArrowDown";
+  Keys2["Home"] = "Home";
+  Keys2["End"] = "End";
+  Keys2["PageUp"] = "PageUp";
+  Keys2["PageDown"] = "PageDown";
+  Keys2["Tab"] = "Tab";
+})(Keys || (Keys = {}));
+var id = 0;
+function generateId() {
+  return ++id;
+}
+function useId() {
+  return generateId();
+}
+var focusableSelector = /* @__PURE__ */ ["[contentEditable=true]", "[tabindex]", "a[href]", "area[href]", "button:not([disabled])", "iframe", "input:not([disabled])", "select:not([disabled])", "textarea:not([disabled])"].map(function(selector) {
+  return selector + ":not([tabindex='-1'])";
+}).join(",");
+var Focus;
+(function(Focus2) {
+  Focus2[Focus2["First"] = 1] = "First";
+  Focus2[Focus2["Previous"] = 2] = "Previous";
+  Focus2[Focus2["Next"] = 4] = "Next";
+  Focus2[Focus2["Last"] = 8] = "Last";
+  Focus2[Focus2["WrapAround"] = 16] = "WrapAround";
+  Focus2[Focus2["NoScroll"] = 32] = "NoScroll";
+})(Focus || (Focus = {}));
+var FocusResult;
+(function(FocusResult2) {
+  FocusResult2[FocusResult2["Error"] = 0] = "Error";
+  FocusResult2[FocusResult2["Overflow"] = 1] = "Overflow";
+  FocusResult2[FocusResult2["Success"] = 2] = "Success";
+  FocusResult2[FocusResult2["Underflow"] = 3] = "Underflow";
+})(FocusResult || (FocusResult = {}));
+var Direction;
+(function(Direction2) {
+  Direction2[Direction2["Previous"] = -1] = "Previous";
+  Direction2[Direction2["Next"] = 1] = "Next";
+})(Direction || (Direction = {}));
+function getFocusableElements(container) {
+  if (container === void 0) {
+    container = document.body;
+  }
+  if (container == null)
+    return [];
+  return Array.from(container.querySelectorAll(focusableSelector));
+}
+var FocusableMode;
+(function(FocusableMode2) {
+  FocusableMode2[FocusableMode2["Strict"] = 0] = "Strict";
+  FocusableMode2[FocusableMode2["Loose"] = 1] = "Loose";
+})(FocusableMode || (FocusableMode = {}));
+function isFocusableElement(element, mode) {
+  var _match;
+  if (mode === void 0) {
+    mode = FocusableMode.Strict;
+  }
+  if (element === document.body)
+    return false;
+  return match(mode, (_match = {}, _match[FocusableMode.Strict] = function() {
+    return element.matches(focusableSelector);
+  }, _match[FocusableMode.Loose] = function() {
+    var next = element;
+    while (next !== null) {
+      if (next.matches(focusableSelector))
+        return true;
+      next = next.parentElement;
+    }
+    return false;
+  }, _match));
+}
+function focusIn(container, focus) {
+  var elements = Array.isArray(container) ? container : getFocusableElements(container);
+  var active = document.activeElement;
+  var direction = function() {
+    if (focus & (Focus.First | Focus.Next))
+      return Direction.Next;
+    if (focus & (Focus.Previous | Focus.Last))
+      return Direction.Previous;
+    throw new Error("Missing Focus.First, Focus.Previous, Focus.Next or Focus.Last");
+  }();
+  var startIndex = function() {
+    if (focus & Focus.First)
+      return 0;
+    if (focus & Focus.Previous)
+      return Math.max(0, elements.indexOf(active)) - 1;
+    if (focus & Focus.Next)
+      return Math.max(0, elements.indexOf(active)) + 1;
+    if (focus & Focus.Last)
+      return elements.length - 1;
+    throw new Error("Missing Focus.First, Focus.Previous, Focus.Next or Focus.Last");
+  }();
+  var focusOptions = focus & Focus.NoScroll ? {
+    preventScroll: true
+  } : {};
+  var offset = 0;
+  var total = elements.length;
+  var next = void 0;
+  do {
+    var _next;
+    if (offset >= total || offset + total <= 0)
+      return FocusResult.Error;
+    var nextIdx = startIndex + offset;
+    if (focus & Focus.WrapAround) {
+      nextIdx = (nextIdx + total) % total;
+    } else {
+      if (nextIdx < 0)
+        return FocusResult.Underflow;
+      if (nextIdx >= total)
+        return FocusResult.Overflow;
+    }
+    next = elements[nextIdx];
+    (_next = next) == null ? void 0 : _next.focus(focusOptions);
+    offset += direction;
+  } while (next !== document.activeElement);
+  if (!next.hasAttribute("tabindex"))
+    next.setAttribute("tabindex", "0");
+  return FocusResult.Success;
+}
+function useWindowEvent(type, listener, options) {
+  window.addEventListener(type, listener, options);
+  onUnmounted(function() {
+    return window.removeEventListener(type, listener, options);
+  });
+}
+var StackMessage;
+(function(StackMessage2) {
+  StackMessage2[StackMessage2["AddElement"] = 0] = "AddElement";
+  StackMessage2[StackMessage2["RemoveElement"] = 1] = "RemoveElement";
+})(StackMessage || (StackMessage = {}));
+function dom(ref2) {
+  var _ref$value$$el;
+  if (ref2 == null)
+    return null;
+  if (ref2.value == null)
+    return null;
+  return (_ref$value$$el = ref2.value.$el) != null ? _ref$value$$el : ref2.value;
+}
+var Context = /* @__PURE__ */ Symbol("Context");
+var State;
+(function(State2) {
+  State2[State2["Open"] = 0] = "Open";
+  State2[State2["Closed"] = 1] = "Closed";
+})(State || (State = {}));
+function useOpenClosed() {
+  return inject(Context, null);
+}
+function useOpenClosedProvider(value) {
+  provide(Context, value);
+}
+var DialogStates;
+(function(DialogStates2) {
+  DialogStates2[DialogStates2["Open"] = 0] = "Open";
+  DialogStates2[DialogStates2["Closed"] = 1] = "Closed";
+})(DialogStates || (DialogStates = {}));
+function resolveType(type, as) {
+  if (type)
+    return type;
+  var tag = as != null ? as : "button";
+  if (typeof tag === "string" && tag.toLowerCase() === "button")
+    return "button";
+  return void 0;
+}
+function useResolveButtonType(data, refElement) {
+  var type = ref(resolveType(data.value.type, data.value.as));
+  onMounted(function() {
+    type.value = resolveType(data.value.type, data.value.as);
+  });
+  watchEffect(function() {
+    var _dom;
+    if (type.value)
+      return;
+    if (!dom(refElement))
+      return;
+    if (dom(refElement) instanceof HTMLButtonElement && !((_dom = dom(refElement)) == null ? void 0 : _dom.hasAttribute("type"))) {
+      type.value = "button";
+    }
+  });
+  return type;
+}
+var DisclosureStates;
+(function(DisclosureStates2) {
+  DisclosureStates2[DisclosureStates2["Open"] = 0] = "Open";
+  DisclosureStates2[DisclosureStates2["Closed"] = 1] = "Closed";
+})(DisclosureStates || (DisclosureStates = {}));
+var Focus$1;
+(function(Focus2) {
+  Focus2[Focus2["First"] = 0] = "First";
+  Focus2[Focus2["Previous"] = 1] = "Previous";
+  Focus2[Focus2["Next"] = 2] = "Next";
+  Focus2[Focus2["Last"] = 3] = "Last";
+  Focus2[Focus2["Specific"] = 4] = "Specific";
+  Focus2[Focus2["Nothing"] = 5] = "Nothing";
+})(Focus$1 || (Focus$1 = {}));
+var ListboxStates;
+(function(ListboxStates2) {
+  ListboxStates2[ListboxStates2["Open"] = 0] = "Open";
+  ListboxStates2[ListboxStates2["Closed"] = 1] = "Closed";
+})(ListboxStates || (ListboxStates = {}));
+var MenuStates;
+(function(MenuStates2) {
+  MenuStates2[MenuStates2["Open"] = 0] = "Open";
+  MenuStates2[MenuStates2["Closed"] = 1] = "Closed";
+})(MenuStates || (MenuStates = {}));
+var PopoverStates;
+(function(PopoverStates2) {
+  PopoverStates2[PopoverStates2["Open"] = 0] = "Open";
+  PopoverStates2[PopoverStates2["Closed"] = 1] = "Closed";
+})(PopoverStates || (PopoverStates = {}));
+var PopoverContext = /* @__PURE__ */ Symbol("PopoverContext");
+function usePopoverContext(component) {
+  var context = inject(PopoverContext, null);
+  if (context === null) {
+    var err = new Error("<" + component + " /> is missing a parent <" + Popover.name + " /> component.");
+    if (Error.captureStackTrace)
+      Error.captureStackTrace(err, usePopoverContext);
+    throw err;
+  }
+  return context;
+}
+var PopoverGroupContext = /* @__PURE__ */ Symbol("PopoverGroupContext");
+function usePopoverGroupContext() {
+  return inject(PopoverGroupContext, null);
+}
+var PopoverPanelContext = /* @__PURE__ */ Symbol("PopoverPanelContext");
+function usePopoverPanelContext() {
+  return inject(PopoverPanelContext, null);
+}
+var Popover = /* @__PURE__ */ defineComponent({
+  name: "Popover",
+  props: {
+    as: {
+      type: [Object, String],
+      "default": "div"
+    }
+  },
+  setup: function setup(props, _ref) {
+    var slots = _ref.slots, attrs = _ref.attrs;
+    var buttonId = "headlessui-popover-button-" + useId();
+    var panelId = "headlessui-popover-panel-" + useId();
+    var popoverState = ref(PopoverStates.Closed);
+    var button = ref(null);
+    var panel = ref(null);
+    var api = {
+      popoverState,
+      buttonId,
+      panelId,
+      panel,
+      button,
+      togglePopover: function togglePopover() {
+        var _match;
+        popoverState.value = match(popoverState.value, (_match = {}, _match[PopoverStates.Open] = PopoverStates.Closed, _match[PopoverStates.Closed] = PopoverStates.Open, _match));
+      },
+      closePopover: function closePopover() {
+        if (popoverState.value === PopoverStates.Closed)
+          return;
+        popoverState.value = PopoverStates.Closed;
+      },
+      close: function close(focusableElement) {
+        api.closePopover();
+        var restoreElement = function() {
+          if (!focusableElement)
+            return dom(api.button);
+          if (focusableElement instanceof HTMLElement)
+            return focusableElement;
+          if (focusableElement.value instanceof HTMLElement)
+            return dom(focusableElement);
+          return dom(api.button);
+        }();
+        restoreElement == null ? void 0 : restoreElement.focus();
+      }
+    };
+    provide(PopoverContext, api);
+    useOpenClosedProvider(computed(function() {
+      var _match2;
+      return match(popoverState.value, (_match2 = {}, _match2[PopoverStates.Open] = State.Open, _match2[PopoverStates.Closed] = State.Closed, _match2));
+    }));
+    var registerBag = {
+      buttonId,
+      panelId,
+      close: function close() {
+        api.closePopover();
+      }
+    };
+    var groupContext = usePopoverGroupContext();
+    var registerPopover = groupContext == null ? void 0 : groupContext.registerPopover;
+    function isFocusWithinPopoverGroup() {
+      var _groupContext$isFocus, _dom, _dom2;
+      return (_groupContext$isFocus = groupContext == null ? void 0 : groupContext.isFocusWithinPopoverGroup()) != null ? _groupContext$isFocus : ((_dom = dom(button)) == null ? void 0 : _dom.contains(document.activeElement)) || ((_dom2 = dom(panel)) == null ? void 0 : _dom2.contains(document.activeElement));
+    }
+    watchEffect(function() {
+      return registerPopover == null ? void 0 : registerPopover(registerBag);
+    });
+    useWindowEvent("focus", function() {
+      if (popoverState.value !== PopoverStates.Open)
+        return;
+      if (isFocusWithinPopoverGroup())
+        return;
+      if (!button)
+        return;
+      if (!panel)
+        return;
+      api.closePopover();
+    }, true);
+    useWindowEvent("mousedown", function(event) {
+      var _dom3, _dom4;
+      var target = event.target;
+      if (popoverState.value !== PopoverStates.Open)
+        return;
+      if ((_dom3 = dom(button)) == null ? void 0 : _dom3.contains(target))
+        return;
+      if ((_dom4 = dom(panel)) == null ? void 0 : _dom4.contains(target))
+        return;
+      api.closePopover();
+      if (!isFocusableElement(target, FocusableMode.Loose)) {
+        var _dom5;
+        event.preventDefault();
+        (_dom5 = dom(button)) == null ? void 0 : _dom5.focus();
+      }
+    });
+    return function() {
+      var slot = {
+        open: popoverState.value === PopoverStates.Open,
+        close: api.close
+      };
+      return render({
+        props,
+        slot,
+        slots,
+        attrs,
+        name: "Popover"
+      });
     };
   }
 });
-var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-5560a5c0"]]);
+var PopoverButton = /* @__PURE__ */ defineComponent({
+  name: "PopoverButton",
+  props: {
+    as: {
+      type: [Object, String],
+      "default": "button"
+    },
+    disabled: {
+      type: [Boolean],
+      "default": false
+    }
+  },
+  render: function render$12() {
+    var api = usePopoverContext("PopoverButton");
+    var slot = {
+      open: api.popoverState.value === PopoverStates.Open
+    };
+    var propsWeControl = this.isWithinPanel ? {
+      ref: "el",
+      type: this.type,
+      onKeydown: this.handleKeyDown,
+      onClick: this.handleClick
+    } : {
+      ref: "el",
+      id: api.buttonId,
+      type: this.type,
+      "aria-expanded": this.$props.disabled ? void 0 : api.popoverState.value === PopoverStates.Open,
+      "aria-controls": dom(api.panel) ? api.panelId : void 0,
+      disabled: this.$props.disabled ? true : void 0,
+      onKeydown: this.handleKeyDown,
+      onKeyup: this.handleKeyUp,
+      onClick: this.handleClick
+    };
+    return render({
+      props: _extends({}, this.$props, propsWeControl),
+      slot,
+      attrs: this.$attrs,
+      slots: this.$slots,
+      name: "PopoverButton"
+    });
+  },
+  setup: function setup2(props, _ref2) {
+    var attrs = _ref2.attrs;
+    var api = usePopoverContext("PopoverButton");
+    var groupContext = usePopoverGroupContext();
+    var closeOthers = groupContext == null ? void 0 : groupContext.closeOthers;
+    var panelContext = usePopoverPanelContext();
+    var isWithinPanel = panelContext === null ? false : panelContext === api.panelId;
+    var activeElementRef = ref(null);
+    var previousActiveElementRef = ref(typeof window === "undefined" ? null : document.activeElement);
+    useWindowEvent("focus", function() {
+      previousActiveElementRef.value = activeElementRef.value;
+      activeElementRef.value = document.activeElement;
+    }, true);
+    var elementRef = ref(null);
+    if (!isWithinPanel) {
+      watchEffect(function() {
+        api.button.value = elementRef.value;
+      });
+    }
+    return {
+      isWithinPanel,
+      el: elementRef,
+      type: useResolveButtonType(computed(function() {
+        return {
+          as: props.as,
+          type: attrs.type
+        };
+      }), elementRef),
+      handleKeyDown: function handleKeyDown(event) {
+        var _dom6, _dom7;
+        if (isWithinPanel) {
+          if (api.popoverState.value === PopoverStates.Closed)
+            return;
+          switch (event.key) {
+            case Keys.Space:
+            case Keys.Enter:
+              event.preventDefault();
+              event.stopPropagation();
+              api.closePopover();
+              (_dom6 = dom(api.button)) == null ? void 0 : _dom6.focus();
+              break;
+          }
+        } else {
+          switch (event.key) {
+            case Keys.Space:
+            case Keys.Enter:
+              event.preventDefault();
+              event.stopPropagation();
+              if (api.popoverState.value === PopoverStates.Closed)
+                closeOthers == null ? void 0 : closeOthers(api.buttonId);
+              api.togglePopover();
+              break;
+            case Keys.Escape:
+              if (api.popoverState.value !== PopoverStates.Open)
+                return closeOthers == null ? void 0 : closeOthers(api.buttonId);
+              if (!dom(api.button))
+                return;
+              if (!((_dom7 = dom(api.button)) == null ? void 0 : _dom7.contains(document.activeElement)))
+                return;
+              api.closePopover();
+              break;
+            case Keys.Tab:
+              if (api.popoverState.value !== PopoverStates.Open)
+                return;
+              if (!api.panel)
+                return;
+              if (!api.button)
+                return;
+              if (event.shiftKey) {
+                var _dom8, _dom9;
+                if (!previousActiveElementRef.value)
+                  return;
+                if ((_dom8 = dom(api.button)) == null ? void 0 : _dom8.contains(previousActiveElementRef.value))
+                  return;
+                if ((_dom9 = dom(api.panel)) == null ? void 0 : _dom9.contains(previousActiveElementRef.value))
+                  return;
+                var focusableElements = getFocusableElements();
+                var previousIdx = focusableElements.indexOf(previousActiveElementRef.value);
+                var buttonIdx = focusableElements.indexOf(dom(api.button));
+                if (buttonIdx > previousIdx)
+                  return;
+                event.preventDefault();
+                event.stopPropagation();
+                focusIn(dom(api.panel), Focus.Last);
+              } else {
+                event.preventDefault();
+                event.stopPropagation();
+                focusIn(dom(api.panel), Focus.First);
+              }
+              break;
+          }
+        }
+      },
+      handleKeyUp: function handleKeyUp(event) {
+        var _dom10, _dom11;
+        if (isWithinPanel)
+          return;
+        if (event.key === Keys.Space) {
+          event.preventDefault();
+        }
+        if (api.popoverState.value !== PopoverStates.Open)
+          return;
+        if (!api.panel)
+          return;
+        if (!api.button)
+          return;
+        switch (event.key) {
+          case Keys.Tab:
+            if (!previousActiveElementRef.value)
+              return;
+            if ((_dom10 = dom(api.button)) == null ? void 0 : _dom10.contains(previousActiveElementRef.value))
+              return;
+            if ((_dom11 = dom(api.panel)) == null ? void 0 : _dom11.contains(previousActiveElementRef.value))
+              return;
+            var focusableElements = getFocusableElements();
+            var previousIdx = focusableElements.indexOf(previousActiveElementRef.value);
+            var buttonIdx = focusableElements.indexOf(dom(api.button));
+            if (buttonIdx > previousIdx)
+              return;
+            event.preventDefault();
+            event.stopPropagation();
+            focusIn(dom(api.panel), Focus.Last);
+            break;
+        }
+      },
+      handleClick: function handleClick() {
+        if (props.disabled)
+          return;
+        if (isWithinPanel) {
+          var _dom12;
+          api.closePopover();
+          (_dom12 = dom(api.button)) == null ? void 0 : _dom12.focus();
+        } else {
+          var _dom13;
+          if (api.popoverState.value === PopoverStates.Closed)
+            closeOthers == null ? void 0 : closeOthers(api.buttonId);
+          (_dom13 = dom(api.button)) == null ? void 0 : _dom13.focus();
+          api.togglePopover();
+        }
+      }
+    };
+  }
+});
+var PopoverPanel = /* @__PURE__ */ defineComponent({
+  name: "PopoverPanel",
+  props: {
+    as: {
+      type: [Object, String],
+      "default": "div"
+    },
+    "static": {
+      type: Boolean,
+      "default": false
+    },
+    unmount: {
+      type: Boolean,
+      "default": true
+    },
+    focus: {
+      type: Boolean,
+      "default": false
+    }
+  },
+  render: function render$13() {
+    var api = usePopoverContext("PopoverPanel");
+    var slot = {
+      open: api.popoverState.value === PopoverStates.Open,
+      close: api.close
+    };
+    var propsWeControl = {
+      ref: "el",
+      id: this.id,
+      onKeydown: this.handleKeyDown
+    };
+    return render({
+      props: _extends({}, this.$props, propsWeControl),
+      slot,
+      attrs: this.$attrs,
+      slots: this.$slots,
+      features: Features.RenderStrategy | Features.Static,
+      visible: this.visible,
+      name: "PopoverPanel"
+    });
+  },
+  setup: function setup3(props) {
+    var focus = props.focus;
+    var api = usePopoverContext("PopoverPanel");
+    provide(PopoverPanelContext, api.panelId);
+    onUnmounted(function() {
+      api.panel.value = null;
+    });
+    watchEffect(function() {
+      var _dom14;
+      if (!focus)
+        return;
+      if (api.popoverState.value !== PopoverStates.Open)
+        return;
+      if (!api.panel)
+        return;
+      var activeElement = document.activeElement;
+      if ((_dom14 = dom(api.panel)) == null ? void 0 : _dom14.contains(activeElement))
+        return;
+      focusIn(dom(api.panel), Focus.First);
+    });
+    useWindowEvent("keydown", function(event) {
+      var _dom15;
+      if (api.popoverState.value !== PopoverStates.Open)
+        return;
+      if (!dom(api.panel))
+        return;
+      if (event.key !== Keys.Tab)
+        return;
+      if (!document.activeElement)
+        return;
+      if (!((_dom15 = dom(api.panel)) == null ? void 0 : _dom15.contains(document.activeElement)))
+        return;
+      event.preventDefault();
+      var result = focusIn(dom(api.panel), event.shiftKey ? Focus.Previous : Focus.Next);
+      if (result === FocusResult.Underflow) {
+        var _dom16;
+        return (_dom16 = dom(api.button)) == null ? void 0 : _dom16.focus();
+      } else if (result === FocusResult.Overflow) {
+        if (!dom(api.button))
+          return;
+        var elements = getFocusableElements();
+        var buttonIdx = elements.indexOf(dom(api.button));
+        var nextElements = elements.splice(buttonIdx + 1).filter(function(element) {
+          var _dom17;
+          return !((_dom17 = dom(api.panel)) == null ? void 0 : _dom17.contains(element));
+        });
+        if (focusIn(nextElements, Focus.First) === FocusResult.Error) {
+          focusIn(document.body, Focus.First);
+        }
+      }
+    });
+    useWindowEvent("focus", function() {
+      var _dom18;
+      if (!focus)
+        return;
+      if (api.popoverState.value !== PopoverStates.Open)
+        return;
+      if (!dom(api.panel))
+        return;
+      if ((_dom18 = dom(api.panel)) == null ? void 0 : _dom18.contains(document.activeElement))
+        return;
+      api.closePopover();
+    }, true);
+    var usesOpenClosedState = useOpenClosed();
+    var visible = computed(function() {
+      if (usesOpenClosedState !== null) {
+        return usesOpenClosedState.value === State.Open;
+      }
+      return api.popoverState.value === PopoverStates.Open;
+    });
+    return {
+      id: api.panelId,
+      el: api.panel,
+      handleKeyDown: function handleKeyDown(event) {
+        var _dom19, _dom20;
+        switch (event.key) {
+          case Keys.Escape:
+            if (api.popoverState.value !== PopoverStates.Open)
+              return;
+            if (!dom(api.panel))
+              return;
+            if (!((_dom19 = dom(api.panel)) == null ? void 0 : _dom19.contains(document.activeElement)))
+              return;
+            event.preventDefault();
+            api.closePopover();
+            (_dom20 = dom(api.button)) == null ? void 0 : _dom20.focus();
+            break;
+        }
+      },
+      visible
+    };
+  }
+});
+var OptionState;
+(function(OptionState2) {
+  OptionState2[OptionState2["Empty"] = 1] = "Empty";
+  OptionState2[OptionState2["Active"] = 2] = "Active";
+})(OptionState || (OptionState = {}));
+var Reason;
+(function(Reason2) {
+  Reason2["Finished"] = "finished";
+  Reason2["Cancelled"] = "cancelled";
+})(Reason || (Reason = {}));
+var TreeStates;
+(function(TreeStates2) {
+  TreeStates2["Visible"] = "visible";
+  TreeStates2["Hidden"] = "hidden";
+})(TreeStates || (TreeStates = {}));
+Features.RenderStrategy;
+var _style_0 = ".wrapper[data-v-39a4be46]{height:100%;position:fixed;width:100%}.popover[data-v-39a4be46]{position:absolute;bottom:.5rem;right:.5rem}.cta-button[data-v-39a4be46]{--tw-bg-opacity: 1;background-color:rgba(252,211,77,var(--tw-bg-opacity));border-radius:9999px;border-style:none;cursor:pointer;height:4rem;--tw-shadow-color: 0, 0, 0;--tw-shadow: 0 1px 3px 0 rgba(var(--tw-shadow-color), .1), 0 1px 2px 0 rgba(var(--tw-shadow-color), .06);-webkit-box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);width:4rem}.panel[data-v-39a4be46]{--tw-bg-opacity: 1;background-color:rgba(255,255,255,var(--tw-bg-opacity));padding:1rem;position:absolute;bottom:5rem;right:.5rem;--tw-shadow-color: 0, 0, 0;--tw-shadow: 0 1px 3px 0 rgba(var(--tw-shadow-color), .1), 0 1px 2px 0 rgba(var(--tw-shadow-color), .06);-webkit-box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);z-index:10}.fade-enter-active[data-v-39a4be46],.fade-leave-active[data-v-39a4be46]{-webkit-transition-property:opacity;-o-transition-property:opacity;transition-property:opacity;-webkit-transition-timing-function:cubic-bezier(.4,0,.2,1);-o-transition-timing-function:cubic-bezier(.4,0,.2,1);transition-timing-function:cubic-bezier(.4,0,.2,1);-webkit-transition-duration:.15s;-o-transition-duration:.15s;transition-duration:.15s}.fade-enter[data-v-39a4be46],.fade-leave-to[data-v-39a4be46]{opacity:0}\n";
+const _withScopeId = (n) => (pushScopeId("data-v-39a4be46"), n = n(), popScopeId(), n);
+const _hoisted_1 = { class: "wrapper" };
+const _hoisted_2 = /* @__PURE__ */ createTextVNode("\u{1F4AC}");
+const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, " TEST PARAGRAPH ", -1));
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  setup(__props) {
+    ref(false);
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1, [
+        createVNode(unref(Popover), { class: "popover" }, {
+          default: withCtx(() => [
+            createVNode(unref(PopoverButton), { class: "cta-button" }, {
+              default: withCtx(() => [
+                _hoisted_2
+              ]),
+              _: 1
+            }),
+            createVNode(Transition, { name: "fade" }, {
+              default: withCtx(() => [
+                createVNode(unref(PopoverPanel), { class: "panel" }, {
+                  default: withCtx(() => [
+                    createVNode(HelloWorld, { msg: "Custom Element" }),
+                    _hoisted_3
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })
+      ]);
+    };
+  }
+});
+var App = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]], ["__scopeId", "data-v-39a4be46"]]);
 const AppElement = defineCustomElement(App);
 customElements.define("app-element", AppElement);
