@@ -15,12 +15,12 @@ const isOpen = ref(false)
     </main>
   </transition>
   <button
-    class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer"
+    class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer z-99999"
     @click="isOpen = !isOpen"
   >💬</button>
 </template>
 
-<style scoped lang="pcss">
+<style lang="pcss">
 @import './index.css';
 * {
   /* overwrites body style */
