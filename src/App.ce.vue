@@ -6,24 +6,22 @@ const isOpen = ref(false)
 </script>
 
 <template>
-  <div class="wrapper">
-    <transition name="slide-fade">
-      <main v-if="isOpen">
-        <img alt="Vue logo" src="./assets/logo.png" />
-        <HelloWorld msg="Custom Element" />
+  <transition name="slide-fade">
+    <main v-if="isOpen">
+      <img alt="Vue logo" src="./assets/logo.png" />
+      <HelloWorld msg="Custom Element" />
 
-        <p class="text-pink-500">TEST PARAGRAPH</p>
-      </main>
-    </transition>
-    <button
-      class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer z-9999"
-      @click="isOpen = !isOpen"
-    >💬</button>
-  </div>
+      <p class="text-pink-500">TEST PARAGRAPH</p>
+    </main>
+  </transition>
+  <button
+    class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer z-9999"
+    @click="isOpen = !isOpen"
+  >💬</button>
 </template>
 
 <style lang="pcss">
-.wrapper {
+* {
   /* overwrites body style */
   font-size: 16px; 
   color: black;
