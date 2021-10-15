@@ -11,7 +11,7 @@ const isOpen = ref(false)
       <img alt="Vue logo" src="./assets/logo.png" />
       <HelloWorld msg="Custom Element" />
 
-      <p class="text-pink-500">TEST PARAGRAPH</p>
+      <p class="text-red-500">TEST PARAGRAPH</p>
     </main>
   </transition>
   <button
@@ -21,6 +21,7 @@ const isOpen = ref(false)
 </template>
 
 <style scoped lang="pcss">
+@import './index.css';
 * {
   /* overwrites body style */
   font-size: 16px; 
