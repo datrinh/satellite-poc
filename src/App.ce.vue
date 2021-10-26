@@ -11,16 +11,17 @@ const isOpen = ref(false)
       <img alt="Vue logo" src="./assets/logo.png" />
       <HelloWorld msg="Custom Element" />
 
-      <p class="text-pink-500">TEST PARAGRAPH</p>
+      <p class="text-red-500">TEST PARAGRAPH</p>
     </main>
   </transition>
   <button
-    class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer z-9999"
+    class="fixed bottom-2 right-2 rounded-full w-16 h-16 border-none bg-yellow-300 shadow cursor-pointer z-99999"
     @click="isOpen = !isOpen"
   >💬</button>
 </template>
 
 <style lang="pcss">
+@import './index.css';
 * {
   /* overwrites body style */
   font-size: 16px; 
