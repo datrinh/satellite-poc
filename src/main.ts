@@ -14,3 +14,5 @@ customElements.define("charles-newsletter", NewsletterOptInElement);
 // register();
 
 // export { register };
+
+export { NewsletterOptIn };
