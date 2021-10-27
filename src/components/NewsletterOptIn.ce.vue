@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const isOpen = ref(false)
+const props = defineProps({
+  title: String
+})
 </script>
 
 <template>
   <div class="rounded shadow border p-4">
-    Sign Up
+    <h1>
+      {{ title }}
+    </h1>
   </div>
 </template>
 

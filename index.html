@@ -6,25 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
   </head>
+
   <body>
     <div id="app"></div>
-    <button id="loadSatellite">Load Satellite 🛰</button>
-    <script type="module">
-      document.getElementById('loadSatellite').addEventListener('click', ()=> {
-        // This would be replaced by cdn link
-        import ('/src/main.ts').then(module => {
-          console.log('module', module);
-        })
-      })
-    </script>
-
-    <footer style="display:flex;border: 1px solid gray; padding: 4px">
-      <div style="width:50%">
-        This is our original footer!
-      </div>
-      <div style="width:50%">
+    <!-- <button id="loadSatellite">Load Satellite 🛰</button> -->
+    <script type="module" src="/src/main.ts"></script>
+    <footer style="display: flex; border: 1px solid gray; padding: 4px">
+      <div style="width: 50%">This is our original footer!</div>
+      <div style="width: 50%">
         External content can go here:
-        <charles-newsletter></charles-newsletter>
+        <charles-newsletter title="Sign Up"></charles-newsletter>
       </div>
     </footer>
   </body>
