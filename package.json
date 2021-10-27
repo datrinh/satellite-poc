@@ -4,13 +4,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "build:lib": "vue-tsc --noEmit && vite build --config vite.config.lib.ts",
+    "build:app": "vue-tsc --noEmit && vite build --config vite.config.app.ts",
     "serve": "vite preview"
   },
   "dependencies": {
+    "@webcomponents/custom-elements": "^1.5.0",
     "vue": "^3.2.16"
   },
   "devDependencies": {
+    "@types/node": "^16.11.6",
     "@vitejs/plugin-vue": "^1.9.3",
     "autoprefixer": "^10.3.7",
     "postcss": "^8.3.9",

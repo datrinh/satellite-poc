@@ -62,6 +62,28 @@ function normalizeClass(value) {
   }
   return res.trim();
 }
+const toDisplayString = (val) => {
+  return val == null ? "" : isArray(val) || isObject(val) && (val.toString === objectToString || !isFunction(val.toString)) ? JSON.stringify(val, replacer, 2) : String(val);
+};
+const replacer = (_key, val) => {
+  if (val && val.__v_isRef) {
+    return replacer(_key, val.value);
+  } else if (isMap(val)) {
+    return {
+      [`Map(${val.size})`]: [...val.entries()].reduce((entries, [key, val2]) => {
+        entries[`${key} =>`] = val2;
+        return entries;
+      }, {})
+    };
+  } else if (isSet(val)) {
+    return {
+      [`Set(${val.size})`]: [...val.values()]
+    };
+  } else if (isObject(val) && !isArray(val) && !isPlainObject(val)) {
+    return String(val);
+  }
+  return val;
+};
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
 const NOOP = () => {
@@ -835,60 +857,30 @@ function markRaw(value) {
 }
 const toReactive = (value) => isObject(value) ? reactive(value) : value;
 const toReadonly = (value) => isObject(value) ? readonly(value) : value;
-function trackRefValue(ref2) {
+function trackRefValue(ref) {
   if (isTracking()) {
-    ref2 = toRaw(ref2);
-    if (!ref2.dep) {
-      ref2.dep = createDep();
+    ref = toRaw(ref);
+    if (!ref.dep) {
+      ref.dep = createDep();
     }
     {
-      trackEffects(ref2.dep);
+      trackEffects(ref.dep);
     }
   }
 }
-function triggerRefValue(ref2, newVal) {
-  ref2 = toRaw(ref2);
-  if (ref2.dep) {
+function triggerRefValue(ref, newVal) {
+  ref = toRaw(ref);
+  if (ref.dep) {
     {
-      triggerEffects(ref2.dep);
+      triggerEffects(ref.dep);
     }
   }
 }
 function isRef(r) {
   return Boolean(r && r.__v_isRef === true);
 }
-function ref(value) {
-  return createRef(value, false);
-}
-function createRef(rawValue, shallow) {
-  if (isRef(rawValue)) {
-    return rawValue;
-  }
-  return new RefImpl(rawValue, shallow);
-}
-class RefImpl {
-  constructor(value, _shallow) {
-    this._shallow = _shallow;
-    this.dep = void 0;
-    this.__v_isRef = true;
-    this._rawValue = _shallow ? value : toRaw(value);
-    this._value = _shallow ? value : toReactive(value);
-  }
-  get value() {
-    trackRefValue(this);
-    return this._value;
-  }
-  set value(newVal) {
-    newVal = this._shallow ? newVal : toRaw(newVal);
-    if (hasChanged(newVal, this._rawValue)) {
-      this._rawValue = newVal;
-      this._value = this._shallow ? newVal : toReactive(newVal);
-      triggerRefValue(this);
-    }
-  }
-}
-function unref(ref2) {
-  return isRef(ref2) ? ref2.value : ref2;
+function unref(ref) {
+  return isRef(ref) ? ref.value : ref;
 }
 const shallowUnwrapHandlers = {
   get: (target, key, receiver) => unref(Reflect.get(target, key, receiver)),
@@ -2200,7 +2192,7 @@ function createAppContext() {
 }
 let uid = 0;
 function createAppAPI(render2, hydrate) {
-  return function createApp2(rootComponent, rootProps = null) {
+  return function createApp(rootComponent, rootProps = null) {
     if (rootProps != null && !isObject(rootProps)) {
       rootProps = null;
     }
@@ -2305,7 +2297,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       optimized = false;
       n2.dynamicChildren = null;
     }
-    const { type, ref: ref2, shapeFlag } = n2;
+    const { type, ref, shapeFlag } = n2;
     switch (type) {
       case Text:
         processText(n1, n2, container, anchor);
@@ -2333,8 +2325,8 @@ function baseCreateRenderer(options, createHydrationFns) {
         } else
           ;
     }
-    if (ref2 != null && parentComponent) {
-      setRef(ref2, n1 && n1.ref, parentSuspense, n2 || n1, !n2);
+    if (ref != null && parentComponent) {
+      setRef(ref, n1 && n1.ref, parentSuspense, n2 || n1, !n2);
     }
   };
   const processText = (n1, n2, container, anchor) => {
@@ -2917,9 +2909,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
   };
   const unmount = (vnode, parentComponent, parentSuspense, doRemove = false, optimized = false) => {
-    const { type, props, ref: ref2, children, dynamicChildren, shapeFlag, patchFlag, dirs } = vnode;
-    if (ref2 != null) {
-      setRef(ref2, null, parentSuspense, vnode, true);
+    const { type, props, ref, children, dynamicChildren, shapeFlag, patchFlag, dirs } = vnode;
+    if (ref != null) {
+      setRef(ref, null, parentSuspense, vnode, true);
     }
     if (shapeFlag & 256) {
       parentComponent.ctx.deactivate(vnode);
@@ -3077,11 +3069,11 @@ function setRef(rawRef, oldRawRef, parentSuspense, vnode, isUnmount = false) {
   }
   const refValue = vnode.shapeFlag & 4 ? getExposeProxy(vnode.component) || vnode.component.proxy : vnode.el;
   const value = isUnmount ? null : refValue;
-  const { i: owner, r: ref2 } = rawRef;
+  const { i: owner, r: ref } = rawRef;
   const oldRef = oldRawRef && oldRawRef.r;
   const refs = owner.refs === EMPTY_OBJ ? owner.refs = {} : owner.refs;
   const setupState = owner.setupState;
-  if (oldRef != null && oldRef !== ref2) {
+  if (oldRef != null && oldRef !== ref) {
     if (isString(oldRef)) {
       refs[oldRef] = null;
       if (hasOwn(setupState, oldRef)) {
@@ -3091,13 +3083,13 @@ function setRef(rawRef, oldRawRef, parentSuspense, vnode, isUnmount = false) {
       oldRef.value = null;
     }
   }
-  if (isString(ref2)) {
+  if (isString(ref)) {
     const doSet = () => {
       {
-        refs[ref2] = value;
+        refs[ref] = value;
       }
-      if (hasOwn(setupState, ref2)) {
-        setupState[ref2] = value;
+      if (hasOwn(setupState, ref)) {
+        setupState[ref] = value;
       }
     };
     if (value) {
@@ -3106,9 +3098,9 @@ function setRef(rawRef, oldRawRef, parentSuspense, vnode, isUnmount = false) {
     } else {
       doSet();
     }
-  } else if (isRef(ref2)) {
+  } else if (isRef(ref)) {
     const doSet = () => {
-      ref2.value = value;
+      ref.value = value;
     };
     if (value) {
       doSet.id = -1;
@@ -3116,8 +3108,8 @@ function setRef(rawRef, oldRawRef, parentSuspense, vnode, isUnmount = false) {
     } else {
       doSet();
     }
-  } else if (isFunction(ref2)) {
-    callWithErrorHandling(ref2, owner, 12, [value, refs]);
+  } else if (isFunction(ref)) {
+    callWithErrorHandling(ref, owner, 12, [value, refs]);
   } else
     ;
 }
@@ -3223,8 +3215,8 @@ function isSameVNodeType(n1, n2) {
 }
 const InternalObjectKey = `__vInternal`;
 const normalizeKey = ({ key }) => key != null ? key : null;
-const normalizeRef = ({ ref: ref2 }) => {
-  return ref2 != null ? isString(ref2) || isRef(ref2) || isFunction(ref2) ? { i: currentRenderingInstance, r: ref2 } : ref2 : null;
+const normalizeRef = ({ ref }) => {
+  return ref != null ? isString(ref) || isRef(ref) || isFunction(ref) ? { i: currentRenderingInstance, r: ref } : ref : null;
 };
 function createBaseVNode(type, props = null, children = null, patchFlag = 0, dynamicProps = null, shapeFlag = type === Fragment ? 0 : 1, isBlockNode = false, needFullChildrenNormalization = false) {
   const vnode = {
@@ -3304,7 +3296,7 @@ function guardReactiveProps(props) {
   return isProxy(props) || InternalObjectKey in props ? extend({}, props) : props;
 }
 function cloneVNode(vnode, extraProps, mergeRef = false) {
-  const { props, ref: ref2, patchFlag, children } = vnode;
+  const { props, ref, patchFlag, children } = vnode;
   const mergedProps = extraProps ? mergeProps(props || {}, extraProps) : props;
   const cloned = {
     __v_isVNode: true,
@@ -3312,7 +3304,7 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     type: vnode.type,
     props: mergedProps,
     key: mergedProps && normalizeKey(mergedProps),
-    ref: extraProps && extraProps.ref ? mergeRef && ref2 ? isArray(ref2) ? ref2.concat(normalizeRef(extraProps)) : [ref2, normalizeRef(extraProps)] : normalizeRef(extraProps) : ref2,
+    ref: extraProps && extraProps.ref ? mergeRef && ref ? isArray(ref) ? ref.concat(normalizeRef(extraProps)) : [ref, normalizeRef(extraProps)] : normalizeRef(extraProps) : ref,
     scopeId: vnode.scopeId,
     slotScopeIds: vnode.slotScopeIds,
     children,
@@ -4589,34 +4581,6 @@ function ensureRenderer() {
 const render = (...args) => {
   ensureRenderer().render(...args);
 };
-const createApp = (...args) => {
-  const app = ensureRenderer().createApp(...args);
-  const { mount } = app;
-  app.mount = (containerOrSelector) => {
-    const container = normalizeContainer(containerOrSelector);
-    if (!container)
-      return;
-    const component = app._component;
-    if (!isFunction(component) && !component.render && !component.template) {
-      component.template = container.innerHTML;
-    }
-    container.innerHTML = "";
-    const proxy = mount(container, false, container instanceof SVGElement);
-    if (container instanceof Element) {
-      container.removeAttribute("v-cloak");
-      container.setAttribute("data-v-app", "");
-    }
-    return proxy;
-  };
-  return app;
-};
-function normalizeContainer(container) {
-  if (isString(container)) {
-    const res = document.querySelector(container);
-    return res;
-  }
-  return container;
-}
 var _style_0 = '*,:before,:after{box-sizing:border-box}html{-moz-tab-size:4;-o-tab-size:4;tab-size:4}html{line-height:1.15;-webkit-text-size-adjust:100%}body{margin:0}body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji"}hr{height:0;color:inherit}abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted}b,strong{font-weight:bolder}code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit}button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;line-height:1.15;margin:0}button,select{text-transform:none}button,[type=button],[type=reset],[type=submit]{-webkit-appearance:button}::-moz-focus-inner{border-style:none;padding:0}:-moz-focusring{outline:1px dotted ButtonText}:-moz-ui-invalid{box-shadow:none}legend{padding:0}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre{margin:0}button{background-color:transparent;background-image:none}fieldset{margin:0;padding:0}ol,ul{list-style:none;margin:0;padding:0}html{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";line-height:1.5}body{font-family:inherit;line-height:inherit}*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:currentColor}hr{border-top-width:1px}img{border-style:solid}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input:-ms-input-placeholder,textarea:-ms-input-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:-moz-focusring{outline:auto}table{border-collapse:collapse}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}button,input,optgroup,select,textarea{padding:0;line-height:inherit;color:inherit}pre,code,kbd,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}*,:before,:after{--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-transform: translateX(var(--tw-translate-x)) translateY(var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));--tw-border-opacity: 1;border-color:rgba(229,231,235,var(--tw-border-opacity));--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000}.fixed{position:fixed}.bottom-2{bottom:.5rem}.right-2{right:.5rem}.bottom-20{bottom:5rem}.h-16{height:4rem}.w-16{width:4rem}.transform{transform:var(--tw-transform)}.cursor-pointer{cursor:pointer}.rounded-full{border-radius:9999px}.rounded{border-radius:.25rem}.border{border-width:1px}.border-none{border-style:none}.bg-yellow-300{--tw-bg-opacity: 1;background-color:rgba(252,211,77,var(--tw-bg-opacity))}.bg-white{--tw-bg-opacity: 1;background-color:rgba(255,255,255,var(--tw-bg-opacity))}.p-4{padding:1rem}.text-red-500{--tw-text-opacity: 1;color:rgba(239,68,68,var(--tw-text-opacity))}.text-green-500{--tw-text-opacity: 1;color:rgba(16,185,129,var(--tw-text-opacity))}.shadow{--tw-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.transition{transition-property:background-color,border-color,color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:background-color,border-color,color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:background-color,border-color,color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}\n';
 var _export_sfc = (sfc, props) => {
   for (const [key, val] of props) {
@@ -4626,20 +4590,27 @@ var _export_sfc = (sfc, props) => {
 };
 const _hoisted_1 = { class: "rounded shadow border p-4" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
+  props: {
+    title: String
+  },
   setup(__props) {
-    ref(false);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1, " Sign Up ");
+      return openBlock(), createElementBlock("div", _hoisted_1, [
+        createBaseVNode("h1", null, toDisplayString(__props.title), 1)
+      ]);
     };
   }
 });
 var NewsletterOptIn = /* @__PURE__ */ _export_sfc(_sfc_main, [["styles", [_style_0]]]);
-defineCustomElement(NewsletterOptIn);
+const NewsletterOptInElement = defineCustomElement(NewsletterOptIn);
 const register = (elName = "charles-newsletter") => {
-  if (!customElements)
-    ;
-  else {
-    createApp(NewsletterOptIn).mount("#charlesNewsletter");
-  }
+  customElements.define(elName, NewsletterOptInElement);
 };
-export { NewsletterOptIn, register };
+const init = async () => {
+  if (!customElements) {
+    await import("https://unpkg.com/@webcomponents/custom-elements");
+  }
+  register();
+};
+init();
+export { NewsletterOptIn, init };

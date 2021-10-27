@@ -7,9 +7,9 @@ const register = (elName = "charles-newsletter") => {
   customElements.define(elName, NewsletterOptInElement);
 };
 
-const init = () => {
+const init = async () => {
   if (!customElements) {
-    import("https://unpkg.com/@webcomponents/custom-elements");
+    await import("https://unpkg.com/@webcomponents/custom-elements");
   }
   register();
 };
